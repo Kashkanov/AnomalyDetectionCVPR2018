@@ -3,11 +3,11 @@ clear all
 close all
  
 
-C3D_CNN_Path='/home/cvlab/Waqas_Data/Anomaly_Data/C3D_Complete_video/Testing_Videos_C3D'; % C3D features for videos
-Testing_VideoPath='/home/cvlab/Waqas_Data/Anomaly_Data/Testing_Videos'; % Path of mp4 videos
-AllAnn_Path='/home/cvlab/Waqas_Data/Anomaly_Data/Temporal_Annotations'; % Path of Temporal Annotations
-Model_Score_Folder='/home/cvlab/Waqas_Data/Anomaly_Data/Model_Res';  % Path of Pretrained Model score on Testing videos (32 numbers for 32 temporal segments)
-Paper_Results='/home/cvlab/Waqas_Data/Anomaly_Data/Eval_Res';   % Path to save results.
+C3D_CNN_Path='/Users/Ermina Tepora/Documents/Karl Files/THESIS/AnomalyDetectionCVPR2018/data/test_features'; % C3D features for videos
+Testing_VideoPath='/Users/Ermina Tepora/Documents/Karl Files/THESIS/AnomalyDetectionCVPR2018/data/test_videos'; % Path of mp4 videos
+%AllAnn_Path='/home/cvlab/Waqas_Data/Anomaly_Data/Temporal_Annotations'; % Path of Temporal Annotations
+Model_Score_Folder='/Users/Ermina Tepora/Documents/Karl Files/THESIS/AnomalyDetectionCVPR2018/data/test_features';  % Path of Pretrained Model score on Testing videos (32 numbers for 32 temporal segments)
+Paper_Results='/Users/Ermina Tepora/Documents/Karl Files/THESIS/AnomalyDetectionCVPR2018/output';   % Path to save results.
  
 All_Videos_scores=dir(Model_Score_Folder);
 All_Videos_scores=All_Videos_scores(3:end);
@@ -19,30 +19,28 @@ All_GT=zeros(1,1000000);
 for ivideo=1:nVideos
     ivideo
 
-    Ann_Path=[AllAnn_Path,'/',All_Videos_scores(ivideo).name(1:end-4),'.mat'];
-    load(Ann_Path)
-    check=strmatch(All_Videos_scores(ivideo).name(1:end-6),Testing_Videos1.name(1:end-3));
-    if isempty(check)
-         error('????') 
-    end
+    % Ann_Path=[AllAnn_Path,'/',All_Videos_scores(ivideo).name(1:end-4),'.mat'];
+    % load(Ann_Path)
+    % check=strmatch(All_Videos_scores(ivideo).name(1:end-6),Testing_Videos1.name(1:end-3));
+    % if isempty(check)
+    %      error('????') 
+    % end
 
     VideoPath=[Testing_VideoPath,'/', All_Videos_scores(ivideo).name(1:end-4),'.mp4'];
-    ScorePath=[Model_Score_Folder,'/', All_Videos_scores(ivideo).name(1:end-4),'.mat'];
+    ScorePath=[Model_Score_Folder,'/output', All_Videos_scores(ivideo).name(1:end-4),'.mat'];
 
   %% Load Video
-    try
-        xyloObj = VideoReader(VideoPath);
-    catch
-
-       error('???')
-    end
+    
+    fprintf('%s\n', VideoPath);
+    xyloObj = VideoReader(VideoPath);
+  
 
     Predic_scores=load(ScorePath);
     fps=30;
     Actual_frames=round(xyloObj.Duration*fps);
 
     Folder_Path=[C3D_CNN_Path,'/',All_Videos_scores(ivideo).name(1:end-4)];
-    AllFiles=dir([Folder_Path,'/*.fc6-1']);
+    AllFiles=dir([Folder_Path,'/*.txt']);
     nFileNumbers=length(AllFiles);
     nFrames_C3D=nFileNumbers*16;  % As the features were computed for every 16 frames
 
@@ -50,6 +48,7 @@ for ivideo=1:nVideos
 %% 32 Shots
     Detection_score_32shots=zeros(1,nFrames_C3D);
     Thirty2_shots= round(linspace(1,length(AllFiles),33));
+    fprintf(class(Thirty2_shots(1)));
     Shots_Features=[];
     p_c=0;
 
@@ -62,6 +61,10 @@ for ivideo=1:nVideos
         if ishots==length(Thirty2_shots)
             ee=Thirty2_shots(ishots+1);
         end
+        
+        ee = int32(ee);
+        ss = int32(ss);
+        fprintf("%d\n", ee);
 
         if ee<ss
             Detection_score_32shots((ss-1)*16+1:(ss-1)*16+1+15)=Predic_scores.predictions(p_c);   

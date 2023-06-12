@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-ROC_PathAL='/Users/Waqas/Desktop/Presentation/PaperAL/CVPR2018/Code/PublicCode/GithubCode/Paper_Results';
+ROC_PathAL='/Users/Ermina Tepora/Documents/Karl Files/THESIS\AnomalyDetectionCVPR2018/Paper_Results';
 All_files=dir([ROC_PathAL,'/*.mat']);
 %All_files=All_files(3:end);
 Colors={'b','c','k','r'};

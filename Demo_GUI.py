@@ -1,3 +1,7 @@
+import os
+os.environ['KERAS_BACKEND'] = 'theano'
+os.environ["THEANO_FLAGS"] = "mode=FAST_COMPILE"
+from keras.models import Sequential
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.regularizers import l2
@@ -19,6 +23,7 @@ from skimage import color
 from os.path import isfile, join
 import numpy as np
 import numpy
+import numpy.matlib
 from datetime import datetime
 from scipy.spatial.distance import cdist,pdist,squareform
 import theano.sandbox
@@ -29,8 +34,9 @@ import theano.sandbox
 import matplotlib.pyplot as plt
 import cv2
 import os, sys
+os.environ['KERAS_BACKEND'] = 'theano'
 import pickle
-from PyQt4 import QtGui   # If PyQt4 is not working in your case, you can try PyQt5, 
+from PyQt5 import QtWidgets   # If PyQt4 is not working in your case, you can try PyQt5, 
 seed = 7
 numpy.random.seed(seed)
 
@@ -102,7 +108,7 @@ def load_dataset_One_Video_Features(Test_Video_Path):
     VideoPath =Test_Video_Path
     f = open(VideoPath, "r")
     words = f.read().split()
-    num_feat = len(words) / 4096
+    num_feat = len(words) // 4096
     # Number of features per video to be loaded. In our case num_feat=32, as we divide the video into 32 segments. Npte that
     # we have already computed C3D features for the whole video and divide the video features into 32 segments.
 
@@ -119,7 +125,7 @@ def load_dataset_One_Video_Features(Test_Video_Path):
 
     return  AllFeatures
 
-class PrettyWidget(QtGui.QWidget):
+class PrettyWidget(QtWidgets.QWidget):
 
     def __init__(self):
         super(PrettyWidget, self).__init__()
@@ -128,11 +134,11 @@ class PrettyWidget(QtGui.QWidget):
     def initUI(self):
         self.setGeometry(500, 100, 500, 500)
         self.setWindowTitle('Anomaly Detection')
-        btn = QtGui.QPushButton('ANOMALY DETECTION SYSTEM \n Please select video', self)
+        btn = QtWidgets.QPushButton('ANOMALY DETECTION SYSTEM \n Please select video', self)
 
         Model_dir = '/home/cvlab/Waqas_Data/Anomaly_Data/Pre_TrainedModels/L1L2/'
-        weights_path = Model_dir + 'weights_L1L2.mat'
-        model_path = Model_dir + 'model.json'
+        weights_path = 'weights_L1L2.mat'
+        model_path = 'model.json'
         ########################################
         ######    LOAD ABNORMALITY MODEL   ######
         global model
@@ -155,18 +161,19 @@ class PrettyWidget(QtGui.QWidget):
 
 
     def SingleBrowse(self):
-        video_path = QtGui.QFileDialog.getOpenFileName(self,
+        video_path = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         'Single File',
                                                         "/home/cvlab/Waqas_Data/Anomaly_Data/Normal_test_abn")
 
-        print(video_path)
-        cap = cv2.VideoCapture(video_path)
+        print("vidpath: ", video_path[0])
+        cap = cv2.VideoCapture(video_path[0])
         #Total_frames = cap.get(cv2.CV_CAP_PROP_FRAME_COUNT)
         print(cv2)
         Total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
         total_segments = np.linspace(1, Total_frames, num=33)
         total_segments = total_segments.round()
-        FeaturePath=(video_path)
+        print("total segments: ", total_segments)
+        FeaturePath=(video_path[0])
         FeaturePath = FeaturePath[0:-4]
         FeaturePath = FeaturePath+ '.txt'
         inputs = load_dataset_One_Video_Features(FeaturePath)
@@ -175,8 +182,10 @@ class PrettyWidget(QtGui.QWidget):
 
         Frames_Score = []
         count = -1;
-        for iv in range(0, 32):
-            F_Score = np.matlib.repmat(predictions[iv],1,(int(total_segments[iv+1])-int(total_segments[iv])))
+        
+        for iv in range(0, 15):
+            print("Fscore1 = ", int(total_segments[iv+1]), int(total_segments[iv]))
+            F_Score = np.tile(predictions[iv],(1,int(total_segments[iv+1])-int(total_segments[iv])))
             count = count + 1
             if count == 0:
               Frames_Score = F_Score
@@ -185,9 +194,9 @@ class PrettyWidget(QtGui.QWidget):
 
 
 
-        cap = cv2.VideoCapture((video_path))
+        cap = cv2.VideoCapture((video_path[0]))
         while not cap.isOpened():
-            cap = cv2.VideoCapture((video_path))
+            cap = cv2.VideoCapture((video_path[0]))
             cv2.waitKey(1000)
             print ("Wait for the header")
 
@@ -233,7 +242,7 @@ class PrettyWidget(QtGui.QWidget):
 
 
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     w = PrettyWidget()
     app.exec_()
 
