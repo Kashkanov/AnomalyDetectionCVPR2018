@@ -98,7 +98,7 @@ print("Starting testing...")
 
 AllTest_Video_Path = 'data/test_features/'
 # AllTest_Video_Path contains C3D features (txt file)  of each video. Each file contains 32 features, each of 4096 dimensions.
-Results_Path = 'output'
+Results_Path = 'output/'
 # Results_Path is the folder where you can save your results
 Model_dir='data/trained_weights/'
 # Model_dir is the folder where we have placed our trained weights
@@ -126,7 +126,7 @@ for iv in range(nVideos):
     predictions = model.predict_on_batch(inputs)   # Get anomaly prediction for each of 32 video segments.
     print(predictions)
     #loss_graph = np.hstack((loss_graph, predictions))
-    print(loss_graph)
+    print(Results_Path)
     aa=All_Test_files[iv]
     aa=aa[0:-4]
     A_predictions_path = Results_Path + aa + '.mat'  # Save array of 1*32, containing anomaly score for each segment. Please see Evaluate Anomaly Detector to compute  ROC.
